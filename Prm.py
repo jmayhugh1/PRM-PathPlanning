@@ -3,6 +3,7 @@ from tkinter import messagebox
 import numpy as np
 import random
 
+
 class PRM:
     def __init__(self, start, goal, num_nodes, map_size, obstacles):
         self.start = start
@@ -40,8 +41,10 @@ class PRM:
 
     def line_intersects_rect(self, p1, p2, rect):
         x1, y1, x2, y2 = rect
+
         def ccw(A, B, C):
             return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+
         A, B, C, D = (x1, y1), (x2, y1), (x2, y2), (x1, y2)
         return ccw(p1, A, B) != ccw(p2, A, B) and ccw(p1, C, D) != ccw(p2, C, D)
 
@@ -60,9 +63,9 @@ class PRM:
     def a_star(self):
         open_set = {self.start}
         came_from = {}
-        g_score = {node: float('inf') for node in self.nodes}
+        g_score = {node: float("inf") for node in self.nodes}
         g_score[self.start] = 0
-        f_score = {node: float('inf') for node in self.nodes}
+        f_score = {node: float("inf") for node in self.nodes}
         f_score[self.start] = self.distance(self.start, self.goal)
 
         while open_set:
@@ -76,7 +79,9 @@ class PRM:
                 if tentative_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + self.distance(neighbor, self.goal)
+                    f_score[neighbor] = g_score[neighbor] + self.distance(
+                        neighbor, self.goal
+                    )
                     if neighbor not in open_set:
                         open_set.add(neighbor)
 
@@ -89,6 +94,7 @@ class PRM:
             total_path.append(current)
         total_path.reverse()
         return total_path
+
 
 class PRM_GUI:
     def __init__(self, root):
@@ -109,9 +115,13 @@ class PRM_GUI:
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.button_frame = tk.Frame(self.root)
         self.button_frame.pack()
-        self.plan_button = tk.Button(self.button_frame, text="Start Simulation", command=self.start_simulation)
+        self.plan_button = tk.Button(
+            self.button_frame, text="Start Simulation", command=self.start_simulation
+        )
         self.plan_button.pack(side=tk.LEFT)
-        self.quit_button = tk.Button(self.button_frame, text="Quit", command=self.root.quit)
+        self.quit_button = tk.Button(
+            self.button_frame, text="Quit", command=self.root.quit
+        )
         self.quit_button.pack(side=tk.LEFT)
         self.canvas.bind("<Configure>", self.on_resize)
 
@@ -130,7 +140,13 @@ class PRM_GUI:
             self.root.after(1000, self.run_simulation)
 
     def plan_and_move(self):
-        prm = PRM(tuple(self.ego_position), tuple(self.target_position), self.num_nodes, self.map_size, self.obstacles)
+        prm = PRM(
+            tuple(self.ego_position),
+            tuple(self.target_position),
+            self.num_nodes,
+            self.map_size,
+            self.obstacles,
+        )
         path = prm.find_path()
         if len(path) > 1:
             self.ego_position = path[1]
@@ -145,25 +161,65 @@ class PRM_GUI:
         y_scale = self.canvas_height / self.map_size[1]
 
         for obs in self.obstacles:
-            self.canvas.create_rectangle(obs[0]*x_scale, obs[1]*y_scale, obs[2]*x_scale, obs[3]*y_scale, fill='black')
+            self.canvas.create_rectangle(
+                obs[0] * x_scale,
+                obs[1] * y_scale,
+                obs[2] * x_scale,
+                obs[3] * y_scale,
+                fill="black",
+            )
 
         for edge in edges:
             (x1, y1), (x2, y2) = edge
-            self.canvas.create_line(x1*x_scale, y1*y_scale, x2*x_scale, y2*y_scale, fill='blue', width=1, stipple='gray50')
+            self.canvas.create_line(
+                x1 * x_scale,
+                y1 * y_scale,
+                x2 * x_scale,
+                y2 * y_scale,
+                fill="blue",
+                width=1,
+                stipple="gray50",
+            )
 
         for node in nodes:
-            self.canvas.create_oval(node[0]*x_scale-3, node[1]*y_scale-3, node[0]*x_scale+3, node[1]*y_scale+3, fill='blue')
+            self.canvas.create_oval(
+                node[0] * x_scale - 3,
+                node[1] * y_scale - 3,
+                node[0] * x_scale + 3,
+                node[1] * y_scale + 3,
+                fill="blue",
+            )
 
         if path:
             px, py = zip(*path)
-            for i in range(len(px)-1):
-                self.canvas.create_line(px[i]*x_scale, py[i]*y_scale, px[i+1]*x_scale, py[i+1]*y_scale, fill='red', width=2)
+            for i in range(len(px) - 1):
+                self.canvas.create_line(
+                    px[i] * x_scale,
+                    py[i] * y_scale,
+                    px[i + 1] * x_scale,
+                    py[i + 1] * y_scale,
+                    fill="red",
+                    width=2,
+                )
 
-        self.canvas.create_oval(self.ego_position[0]*x_scale-5, self.ego_position[1]*y_scale-5, self.ego_position[0]*x_scale+5, self.ego_position[1]*y_scale+5, fill='green')
-        self.canvas.create_oval(self.target_position[0]*x_scale-5, self.target_position[1]*y_scale-5, self.target_position[0]*x_scale+5, self.target_position[1]*y_scale+5, fill='red')
+        self.canvas.create_oval(
+            self.ego_position[0] * x_scale - 5,
+            self.ego_position[1] * y_scale - 5,
+            self.ego_position[0] * x_scale + 5,
+            self.ego_position[1] * y_scale + 5,
+            fill="green",
+        )
+        self.canvas.create_oval(
+            self.target_position[0] * x_scale - 5,
+            self.target_position[1] * y_scale - 5,
+            self.target_position[0] * x_scale + 5,
+            self.target_position[1] * y_scale + 5,
+            fill="red",
+        )
 
     def stop_simulation(self):
         self.running = False
+
 
 if __name__ == "__main__":
     root = tk.Tk()
